@@ -91,12 +91,12 @@ void star(int x, int y, int s) {
 }
 void moon(int x, int y) {
     mid_point_circle_algo(x, y, 200, 1, 1, 1);
-    mid_point_circle_algo(x + 50, y + 50, 185, 0.430000, 0.000000, 0.650000);
+    mid_point_circle_algo(x + 50, y + 50, 185, 0.150000, 0.000000, 0.650000);
 }
 void sky() {
     int cur_y = -200;
     double r = 0.5, g = 0, b = 1;
-    for (int i = 0;cur_y < 1200;i += 50, b -= 0.05, r -= 0.01) {
+    for (int i = 0;cur_y < 1200;i += 50, b -= 0.05, r -= 0.05) {
         create_rectangle(-1600, cur_y, i, 3200, r, g, b);
         cur_y += i;
     }
@@ -110,13 +110,41 @@ void gen_stars(int n) {
     }
 }
 void plot_stars() {
-    for (auto [x, y] : Stars) {
-        star(x.first, x.second, y);
+    for (int i = 0;i < Stars.size();i++) {
+        star(Stars[i].first.first, Stars[i].first.second, Stars[i].second);
+    }
+}
+double tx = 0.0, ty = 0.0, gr = 0, gg = 0, gb = 0, ss = 0;
+vector<pair<int, int> >city_blocks;
+void city_landscape() {
+    int total_w = -1600;
+    if (city_blocks.empty())for (int i = 0;total_w < 1600;i++) {
+        int cur_h = 300 + rand() % 250;
+        int cur_w = 10 + rand() % 50;
+        city_blocks.push_back({ cur_w,cur_h });
+        total_w += cur_w;
+    }
+    total_w = -1600;
+    for (auto [x, y] : city_blocks) {
+        create_rectangle(total_w, -200, y, x, .2, .1, .5);
+        total_w += x;
+    }
+}
+void water() {
+    double r = 54.0 / 256.0, g = 129.0 / 256.0, b = 157 / 256.0;
+    double tr = 144.0 / 256.0, tg = 198.0 / 256.0, tb = 218.0 / 256.0;
+    for (int i = -1200;i < -200;i += 10, r = (tr - r) / 100.0, g += (tg - g) / 100.0, b += (tb - b) / 100.0) {
+        create_rectangle(-1600, i, 50, 3200, r, g, b);
+    }
+    for (int i = 0;i < 50;i++, tr += rand() % 2 == 0 ? .2 : -.2, tb += rand() % 2 == 0 ? .1 : -.1) {
+        create_rectangle(-1600 + rand() % 3200, -1200 + rand() % 1000, 20, 30 * (rand() % 10), tr, tg, tb);
     }
 }
 void Draw()
 {
     glClear(GL_COLOR_BUFFER_BIT);
+    glPushMatrix();
+
     sky();
     moon(800, 800);
     plot_stars();
@@ -133,8 +161,35 @@ void Draw()
         cnt = 0;
     }
     cnt++;
+    city_landscape();
+    water();
     glutPostRedisplay();
+    glTranslated(tx, ty, 0);
+    create_rectangle(0 - ss / 2, 0 - ss / 2, 50 + ss, 50 + ss, gr, gg, gb);
+    glPopMatrix();
     glFlush();
+    glEnd();
+}
+void spe_key(int key, int x, int y) {
+    if (key == GLUT_KEY_LEFT)tx -= 50;
+    else if (key == GLUT_KEY_RIGHT)tx += 50;
+    else if (key == GLUT_KEY_UP)ty += 50;
+    else if (key == GLUT_KEY_DOWN)ty -= 50;
+    glutPostRedisplay();
+}
+void my_keyboard(unsigned char key, int x, int y) {
+    if (key == 'q')gr += 0.1;
+    else if (key == 'w')gg += 0.1;
+    else if (key == 'e')gb += 0.1;
+    else if (key == 'a')gr -= 0.1;
+    else if (key == 's')gg -= 0.1;
+    else if (key == 'd')gb -= 0.1;
+    else if (key == 'z')ss += 10;
+    else if (key == 'x')ss -= 10;
+    gr = max(min(gr, 1.0), 0.0);
+    gg = max(min(gg, 1.0), 0.0);
+    gb = max(min(gb, 1.0), 0.0);
+    glutPostRedisplay();
 }
 int main(int argc, char** argv)
 {
@@ -142,11 +197,12 @@ int main(int argc, char** argv)
     glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
     glutInitWindowPosition(0, 0);
     glutInitWindowSize(800, 600);
-    glutCreateWindow("Half moon in cloud");
+    glutCreateWindow("project");
     init();
     gen_stars(35);
     glutDisplayFunc(Draw);
+    glutSpecialFunc(spe_key);
+    glutKeyboardFunc(my_keyboard);
     glutMainLoop();
     return 0;
 }
-

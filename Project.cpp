@@ -137,7 +137,7 @@ void water() {
         create_rectangle(-1600, i, 50, 3200, r, g, b);
     }
     for (int i = 0;i < 50;i++, tr += rand() % 2 == 0 ? .2 : -.2, tb += rand() % 2 == 0 ? .1 : -.1) {
-        create_rectangle(-1600 + rand() % 3200, -1200 + rand() % 1000, 20, 30 * (rand() % 10), tr, tg, tb);
+        create_rectangle(-1600 + rand() % 3200, -1200 + rand() % 1000, 10, 30 * (rand() % 10), tr, tg, tb);
     }
 }
 void Draw()
@@ -197,7 +197,7 @@ int main(int argc, char** argv)
     glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
     glutInitWindowPosition(0, 0);
     glutInitWindowSize(800, 600);
-    glutCreateWindow("project");
+    glutCreateWindow("Half moon in cloud");
     init();
     gen_stars(35);
     glutDisplayFunc(Draw);

@@ -86,7 +86,7 @@ int cur_cloud_2 = -200;
 int cur_cloud_3 = 600;
 int cnt = 0;
 void star(int x, int y, int s) {
-    if (((cur_cloud_3 + x + y) / 10) % 3 < 2)star_rotated(x, y, s, 1, 1, 1);
+    if (abs(((cur_cloud_3 + x + y) / 10) % 3) < 2)star_rotated(x, y, s, 1, 1, 1);
     else star_straight(x, y, s, 1, 1, 1);
 }
 void moon(int x, int y) {
@@ -116,6 +116,59 @@ void plot_stars() {
 }
 double tx = 0.0, ty = 0.0, gr = 0, gg = 0, gb = 0, ss = 0;
 vector<pair<int, int> >city_blocks;
+int wind = 0;
+void flag(int x, int y, int s, double r, double g, double b) {
+    vector<pair<int, int> >P[2];
+    for (int i = s * 10;i >= 0;i -= s, x -= 6 * s) {
+        P[0].push_back({ x,y + i });
+        P[1].push_back({ x,y - i });
+    }
+    vector<int>w;
+    reverse(P[1].begin(), P[1].end());
+    for (int i = 0;i <= 5;i++)w.push_back(i);
+    for (int i = 5;i >= 0;i--)w.push_back(i);
+    glColor3f(r, g, b);
+    glBegin(GL_POLYGON);
+    int curw = (wind / 200) % 10;
+    wind %= 100000;
+    wind++;
+    for (auto [x, y] : P[0]) {
+        if (curw > 10)curw = 0;
+        glVertex2f(x, y + 2 * w[curw]);
+        curw++;
+    }
+    curw = (wind / 200) % 10 + 3;
+    for (auto [x, y] : P[1]) {
+        if (curw > 10)curw = 0;
+        glVertex2f(x, y + 2 * w[curw]);
+        curw++;
+    }
+    glEnd();
+
+}
+void create_triangle(double x, double y, double h, double w, double r, double g, double b)
+{
+    glColor3f(r, g, b);
+    glBegin(GL_POLYGON);
+    glVertex2f(x, y);
+    glVertex2f(x, y + h);
+    glVertex2f(x + w, y + h);
+    glEnd();
+}
+void boat(int x, int y) {
+    create_rectangle(100 + x - 10, y - 200, 200, 10, 0, 0, 0);
+    //flag(x, y, 3, 0.6, 0, 0);
+    flag(100 + x, y, 4, 1, 0, 0);
+    y += ((wind / 100) % 10);
+    glColor3f(0, 0, 0);
+    glBegin(GL_POLYGON);
+    glVertex2f(x, y - 110);
+    for (int i = 0; i <= 10;i++) {
+        glVertex2f(x + 3 * i * i, y - 100 - 100 * i);
+    }
+    glVertex2f(x, y - 100);
+    glEnd();
+}
 void city_landscape() {
     int total_w = -1600;
     if (city_blocks.empty())for (int i = 0;total_w < 1600;i++) {
@@ -136,21 +189,24 @@ void water() {
     for (int i = -1200;i < -200;i += 10, r = (tr - r) / 100.0, g += (tg - g) / 100.0, b += (tb - b) / 100.0) {
         create_rectangle(-1600, i, 50, 3200, r, g, b);
     }
-    for (int i = 0;i < 50;i++, tr += rand() % 2 == 0 ? .2 : -.2, tb += rand() % 2 == 0 ? .1 : -.1) {
+}
+/*
+void water_speed() {
+    for (int i = 0;i < 10;i++, tr += rand() % 2 == 0 ? .2 : -.2, tb += rand() % 2 == 0 ? .1 : -.1) {
         create_rectangle(-1600 + rand() % 3200, -1200 + rand() % 1000, 10, 30 * (rand() % 10), tr, tg, tb);
     }
 }
+*/
 void Draw()
 {
     glClear(GL_COLOR_BUFFER_BIT);
     glPushMatrix();
-
     sky();
     moon(800, 800);
     plot_stars();
-    cloud(cur_cloud_1, 400, 0);
-    cloud(cur_cloud_2, 600, 0);
-    cloud(cur_cloud_3, 1200, 0);
+    cloud(-cur_cloud_1, 400, 0);
+    cloud(-cur_cloud_2, 600, 0);
+    cloud(-cur_cloud_3, 1200, 0);
     if (cur_cloud_1 > 1800)cur_cloud_1 = -1800;
     if (cur_cloud_2 > 1800)cur_cloud_2 = -1800;
     if (cur_cloud_3 > 1800)cur_cloud_3 = -1800;
@@ -165,6 +221,7 @@ void Draw()
     water();
     glutPostRedisplay();
     glTranslated(tx, ty, 0);
+    boat(200, -400);
     create_rectangle(0 - ss / 2, 0 - ss / 2, 50 + ss, 50 + ss, gr, gg, gb);
     glPopMatrix();
     glFlush();
